@@ -1,7 +1,7 @@
-#include <unistd.h>
-#include <sys/wait.h>
-#include <string.h>
 #include <stdlib.h>
+#include <unistd.h>
+#include <string.h>
+#include <sys/wait.h>
 
 void ft_puterror(char *s1, char *s2)
 {
@@ -17,12 +17,12 @@ void ft_puterror(char *s1, char *s2)
 	exit(1);
 }
 
-void	ft_exec(int ac, char **av, char **ev, int tmpfd)
+void ft_exec(int ac, char **av, char **ev, int tmpfd)
 {
-	av[ac] = NULL;					// set the last argument to NULL
-	dup2(tmpfd, STDIN_FILENO);		// set stdin to tmpfd
-	close(tmpfd);					// close tmpfd
-	execve(av[0], av, ev);			// execute the cmd
+	av[ac] = NULL;
+	dup2(tmpfd, STDIN_FILENO);
+	close(tmpfd);
+	execve(av[0], av, ev);
 	ft_puterror("error: cannot execute ", av[0]);
 	exit(1);
 }
@@ -31,31 +31,26 @@ int main(int ac, char **av, char **ev)
 {
 	int i = 0;
 
-	int tmpfd = dup(STDOUT_FILENO);					// save stdout
-	while (av[i] && av[i + 1])
+	int tmpfd = dup(STDOUT_FILENO);
+	while(av[i] && av[i + 1])
 	{
-		// set av as the cmd to execute
-		av = &av[i + 1];							// skip av[0], ; or | (set av to next cmd)
-		
-	
-		// count the cmd arguments
-		ac = 0;										// count cmd arguments
+		av = &av[i + 1]; //skip the av[0] or "|" or ";"
+
+		//count arguments
+		ac = 0;
 		while (av[ac] && strcmp(av[ac], "|") && strcmp(av[ac], ";"))
 			ac++;
 		i = ac;
 
-
-		// check if cmd is cd and execute it
+		//check if cmd is cd and execute it
 		if (strcmp(av[0], "cd") == 0)
 		{
 			if (ac != 2)
-				ft_puterror("error: cd: bad arguments\n", NULL);
+				ft_puterror("error: cd: bad arguments", NULL);
 			else if (chdir(av[1]) != 0)
 				ft_puterror("error: cd: cannot change directory to ", av[1]);
 		}
-
-
-		// check if the cmd is not proceeded by a pipe and execute it on stdout
+		//check if cmd is not proceeded by a pipe
 		else if (ac != 0 && (av[ac] == NULL || strcmp(av[ac], ";") == 0))
 		{
 			if (fork() == 0)
@@ -63,13 +58,12 @@ int main(int ac, char **av, char **ev)
 			else
 			{
 				close(tmpfd);
-				while(waitpid(-1, NULL, WUNTRACED) != -1);	// wait for child process to finish
-				tmpfd = dup(STDOUT_FILENO);					// save stdout
+				while(waitpid(-1, NULL, WUNTRACED) != -1); //wait for child to finish
+				tmpfd = dup(STDOUT_FILENO);
 			}
 		}
 
-
-		// check if the cmd is proceeded by a pipe and execute it on the pipe
+		//check if command is proceeded by a pipe and execute it on the pipe
 		else if (ac != 0 && strcmp(av[ac], "|") == 0)
 		{
 			int fd[2];
@@ -88,6 +82,7 @@ int main(int ac, char **av, char **ev)
 				tmpfd = fd[0];
 			}
 		}
+
 	}
 	close(tmpfd);
 	return (0);
