@@ -14,7 +14,6 @@ void ft_puterror(char *s1, char *s2)
 		i++;
 	write(STDERR_FILENO, s2, i);
 	write(STDERR_FILENO, "\n", 1);
-	exit(1);
 }
 
 void	ft_exec(int ac, char **av, char **ev, int tmpfd)
